@@ -6,5 +6,5 @@
   "cmd.addCurrentFileToChat": "Add Current File to Antigravity Chat",
   "cmd.enableDragAndDrop": "Enable File Drag-and-Drop to Antigravity Chat",
   "cmd.disableDragAndDrop": "Disable File Drag-and-Drop to Antigravity Chat (Restore Original)",
-  "config.autoEnableDragAndDrop": "Automatically patch the Google Antigravity extension to allow dragging and dropping files/folders directly into the Antigravity chat window."
+  "config.autoEnableDragAndDrop": "Automatically enable the drag-and-drop overlay and floating selection Chat button for Antigravity Chat."
 }

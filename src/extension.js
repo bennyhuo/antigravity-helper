@@ -1,16 +1,14 @@
 // @ts-check
 'use strict';
 
-const {
-  installRuntimeVscodeHook,
-  ensureDragAndDropEnabled,
-  disableDragAndDrop
-} = require('./dragAndDropBridge');
-
-// Install the runtime Module._load hook as early as possible
-installRuntimeVscodeHook();
-
+const fs = require('fs');
 const vscode = require('vscode');
+const {
+  STATE_FILE_PATH,
+  ensureDragAndDropEnabled,
+  disableDragAndDrop,
+  cleanupLegacyAntigravityPatches
+} = require('./dragAndDropBridge');
 const {
   addFileToChat,
   addCurrentFileToChat,
@@ -45,24 +43,49 @@ function activate(context) {
     vscode.commands.registerCommand('antigravity-helper.disableDragAndDrop', disableDragAndDrop)
   );
 
-  // Automatically ensure drag-and-drop bridge is applied if enabled in settings
+  // Automatically ensure workbench overlay is applied if enabled in settings
   const config = vscode.workspace.getConfiguration('antigravityHelper');
   if (config.get('autoEnableDragAndDrop', true)) {
     ensureDragAndDropEnabled({ silent: true });
+  } else {
+    vscode.commands.executeCommand('setContext', 'antigravityHelper.active', false);
+    cleanupLegacyAntigravityPatches();
   }
 
-  // Re-check if extensions change (e.g., Google Antigravity updates to a new version)
+  // React to configuration changes in real time
   context.subscriptions.push(
-    vscode.extensions.onDidChange(() => {
-      const currentConfig = vscode.workspace.getConfiguration('antigravityHelper');
-      if (currentConfig.get('autoEnableDragAndDrop', true)) {
-        ensureDragAndDropEnabled({ silent: true });
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration('antigravityHelper.autoEnableDragAndDrop')) {
+        const currentConfig = vscode.workspace.getConfiguration('antigravityHelper');
+        if (currentConfig.get('autoEnableDragAndDrop', true)) {
+          ensureDragAndDropEnabled({ silent: true });
+        } else {
+          vscode.commands.executeCommand('setContext', 'antigravityHelper.active', false);
+        }
       }
     })
   );
+
+  // Watch the state file so if `vscode:uninstall` runs while the window is still open,
+  // we immediately set `antigravityHelper.active` to false even before window reload.
+  const stateWatchListener = (curr) => {
+    if (curr.nlink === 0) {
+      vscode.commands.executeCommand('setContext', 'antigravityHelper.active', false);
+    }
+  };
+  fs.watchFile(STATE_FILE_PATH, { persistent: false, interval: 1000 }, stateWatchListener);
+  context.subscriptions.push({
+    dispose() {
+      fs.unwatchFile(STATE_FILE_PATH, stateWatchListener);
+    }
+  });
 }
 
-function deactivate() {}
+function deactivate() {
+  try {
+    vscode.commands.executeCommand('setContext', 'antigravityHelper.active', false);
+  } catch (_) {}
+}
 
 module.exports = {
   activate,

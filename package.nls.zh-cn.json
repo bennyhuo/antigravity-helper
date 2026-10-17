@@ -6,5 +6,5 @@
   "cmd.addCurrentFileToChat": "将当前文件添加到 Antigravity 聊天窗口",
   "cmd.enableDragAndDrop": "启用拖拽文件到 Antigravity 聊天窗口",
   "cmd.disableDragAndDrop": "禁用拖拽文件到 Antigravity 聊天窗口（恢复原版）",
-  "config.autoEnableDragAndDrop": "自动为 Google Antigravity 插件注入拖拽支持，允许将文件或文件夹直接拖入 Antigravity 聊天窗口。"
+  "config.autoEnableDragAndDrop": "自动启用拖拽文件到 Antigravity 聊天窗口及选中代码悬浮 Chat 按钮。"
 }
