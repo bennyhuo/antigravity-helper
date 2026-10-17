@@ -1,0 +1,10 @@
+{
+  "displayName": "Antigravity Helper",
+  "description": "Enhance Google Antigravity in VS Code: right-click files/folders to chat, right-click editor selections to chat, and drag-and-drop files directly into the chat window.",
+  "cmd.addFileToChat": "Add to Antigravity Chat",
+  "cmd.addSelectionToChat": "Add Selection to Antigravity Chat",
+  "cmd.addCurrentFileToChat": "Add Current File to Antigravity Chat",
+  "cmd.enableDragAndDrop": "Enable File Drag-and-Drop to Antigravity Chat",
+  "cmd.disableDragAndDrop": "Disable File Drag-and-Drop to Antigravity Chat (Restore Original)",
+  "config.autoEnableDragAndDrop": "Automatically patch the Google Antigravity extension to allow dragging and dropping files/folders directly into the Antigravity chat window."
+}

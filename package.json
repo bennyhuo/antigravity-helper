@@ -1,0 +1,119 @@
+{
+  "name": "antigravity-helper",
+  "displayName": "%displayName%",
+  "description": "%description%",
+  "version": "0.1.2",
+  "publisher": "bennyhuo",
+  "author": {
+    "name": "Benny Huo"
+  },
+  "license": "MIT",
+  "icon": "img/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bennyhuo/antigravity-helper.git"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "AI",
+    "Chat",
+    "Other"
+  ],
+  "keywords": [
+    "Antigravity",
+    "Google Antigravity",
+    "AGY",
+    "Chat",
+    "Context",
+    "Drag and Drop"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "antigravity-helper.addFileToChat",
+        "title": "%cmd.addFileToChat%",
+        "category": "Antigravity"
+      },
+      {
+        "command": "antigravity-helper.addSelectionToChat",
+        "title": "%cmd.addSelectionToChat%",
+        "category": "Antigravity"
+      },
+      {
+        "command": "antigravity-helper.addCurrentFileToChat",
+        "title": "%cmd.addCurrentFileToChat%",
+        "category": "Antigravity"
+      },
+      {
+        "command": "antigravity-helper.enableDragAndDrop",
+        "title": "%cmd.enableDragAndDrop%",
+        "category": "Antigravity"
+      },
+      {
+        "command": "antigravity-helper.disableDragAndDrop",
+        "title": "%cmd.disableDragAndDrop%",
+        "category": "Antigravity"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "antigravity-helper.addFileToChat",
+          "group": "navigation@99"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "antigravity-helper.addSelectionToChat",
+          "when": "editorHasSelection",
+          "group": "navigation@98"
+        },
+        {
+          "command": "antigravity-helper.addCurrentFileToChat",
+          "group": "navigation@99"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "antigravity-helper.addFileToChat",
+          "when": "resourceScheme == file",
+          "group": "navigation@99"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "antigravity-helper.addFileToChat",
+          "when": "false"
+        },
+        {
+          "command": "antigravity-helper.addSelectionToChat",
+          "when": "editorTextFocus && editorHasSelection"
+        },
+        {
+          "command": "antigravity-helper.addCurrentFileToChat",
+          "when": "editorTextFocus"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Antigravity Helper",
+      "properties": {
+        "antigravityHelper.autoEnableDragAndDrop": {
+          "type": "boolean",
+          "default": true,
+          "description": "%config.autoEnableDragAndDrop%"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "package": "node scripts/pack-vsix.js",
+    "publish": "npx @vscode/vsce publish"
+  }
+}

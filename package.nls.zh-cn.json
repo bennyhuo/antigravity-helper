@@ -1,0 +1,10 @@
+{
+  "displayName": "Antigravity Helper",
+  "description": "增强 Google Antigravity VS Code 插件体验：支持右键文件/文件夹添加到聊天、选中代码右键添加到聊天、以及直接拖拽文件到聊天窗口。",
+  "cmd.addFileToChat": "添加到 Antigravity 聊天窗口",
+  "cmd.addSelectionToChat": "将选中内容添加到 Antigravity 聊天窗口",
+  "cmd.addCurrentFileToChat": "将当前文件添加到 Antigravity 聊天窗口",
+  "cmd.enableDragAndDrop": "启用拖拽文件到 Antigravity 聊天窗口",
+  "cmd.disableDragAndDrop": "禁用拖拽文件到 Antigravity 聊天窗口（恢复原版）",
+  "config.autoEnableDragAndDrop": "自动为 Google Antigravity 插件注入拖拽支持，允许将文件或文件夹直接拖入 Antigravity 聊天窗口。"
+}
