@@ -114,6 +114,6 @@
   },
   "scripts": {
     "package": "node scripts/pack-vsix.js",
-    "publish": "npx @vscode/vsce publish"
+    "publish": "npx @vscode/vsce publish --allow-star-activation"
   }
 }

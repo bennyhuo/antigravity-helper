@@ -22,6 +22,7 @@ const filesToCopy = [
   'package.nls.json',
   'package.nls.zh-cn.json',
   'README.md',
+  'README.zh-CN.md',
   'LICENSE',
   'src',
   'img'
@@ -43,6 +44,7 @@ const contentTypesXml = `<?xml version="1.0" encoding="utf-8"?>
   <Default Extension=".png" ContentType="image/png"/>
   <Default Extension=".txt" ContentType="text/plain"/>
   <Default Extension=".vsixmanifest" ContentType="text/xml"/>
+  <Override PartName="/extension/LICENSE" ContentType="text/plain"/>
 </Types>
 `;
 fs.writeFileSync(path.join(tmpDir, '[Content_Types].xml'), contentTypesXml, 'utf8');

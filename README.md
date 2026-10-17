@@ -1,34 +1,66 @@
 # Antigravity Helper for VS Code
 
-补齐 Google Antigravity VS Code 插件（`google.google-antigravity`）缺失的文件与代码片段快捷添加功能：
+**English** | [简体中文](https://github.com/bennyhuo/antigravity-helper/blob/main/README.zh-CN.md)
 
-## 核心功能
+[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/bennyhuo.antigravity-helper?label=VS%20Code%20Marketplace&logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=bennyhuo.antigravity-helper)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-bennyhuo%2Fantigravity--helper-181717?logo=github)](https://github.com/bennyhuo/antigravity-helper)
 
-1. **资源管理器右键添加文件 / 文件夹到聊天窗口（`explorer/context`）**
-   - 在左侧资源管理器（Explorer）中右键任意**文件**或**文件夹**（支持按住 `Cmd` / `Shift` **多选**多个文件或目录），点击 **「添加到 Antigravity 聊天窗口」**（`Add to Antigravity Chat`），即可直接作为 `@file` / `@directory` 上下文添加到 Antigravity 输入框并自动聚焦。
+Enhance the official Google Antigravity VS Code extension (`google.google-antigravity`) with missing context shortcuts: **shift-free file drag-and-drop**, **Explorer & Editor Tab right-click context menus**, and a **floating `Chat` button on text selection**.
 
-2. **编辑器标签页右键添加文件到聊天窗口（`editor/title/context`）**
-   - 在编辑器顶部的 Tab 标签页上右键，点击 **「添加到 Antigravity 聊天窗口」**，即可将该文件添加到聊天窗口。
+- **VS Code Marketplace**: [https://marketplace.visualstudio.com/items?itemName=bennyhuo.antigravity-helper](https://marketplace.visualstudio.com/items?itemName=bennyhuo.antigravity-helper)
+- **GitHub Repository**: [https://github.com/bennyhuo/antigravity-helper](https://github.com/bennyhuo/antigravity-helper)
 
-3. **选中文件内容悬浮按钮 / 右键添加到聊天窗口**
-   - **选中文本悬浮 `Chat` 按钮**：在编辑器中用鼠标或键盘选中任意代码片段后，选区附近会自动弹出 **`Chat`** 悬浮按钮；点击后自动将选中代码行范围添加到 Antigravity 聊天输入框、聚焦输入框并自动取消选区。
-   - **右键菜单**：在编辑器中选中代码片段（支持单选及多光标多选），右键点击 **「将选中内容添加到 Antigravity 聊天窗口」**（`Add Selection to Antigravity Chat`），即可将精确的文件行范围添加到聊天窗口。
-   - 在编辑器任意位置右键，也可以点击 **「将当前文件添加到 Antigravity 聊天窗口」**（`Add Current File to Antigravity Chat`）添加整个文件。
+---
 
-4. **直接将文件 / 文件夹 / 标签页 / 选中代码拖拽到聊天窗口**
-   - 支持直接从 **VS Code 资源管理器（含多选）**、**编辑器标签页**、**大纲（Outline）符号**、**编辑器选中的代码** 或 **系统访达（Finder）** 将文件/目录拖入 Antigravity 聊天面板（**全程无需按住 `Shift` 键**）。
-   - 当 Google Antigravity 插件自动更新后，本插件会自动检测并重新注入拖拽支持。
+## Features
 
-## 命令列表（Command Palette）
+1. **Floating `Chat` Button on Text Selection**
+   - Select any code or text in the editor (via mouse drag, double-click, or keyboard selection) to display a floating **`Chat`** button right next to your selection.
+   - Click **`Chat`** to immediately add the selected file line range to the Antigravity Chat input box, focus the chat input, and clear the selection.
 
-- `Antigravity: Add Selection to Antigravity Chat`（将选中内容添加到 Antigravity 聊天窗口）
-- `Antigravity: Add Current File to Antigravity Chat`（将当前文件添加到 Antigravity 聊天窗口）
-- `Antigravity: Enable File Drag-and-Drop to Antigravity Chat`（启用拖拽文件到 Antigravity 聊天窗口）
-- `Antigravity: Disable File Drag-and-Drop to Antigravity Chat (Restore Original)`（禁用拖拽文件到 Antigravity 聊天窗口并恢复原版文件）
+2. **Drag and Drop Files / Folders / Tabs / Selections to Chat (No `Shift` Required)**
+   - Drag and drop files or folders from the **VS Code Explorer (including multi-select)**, **Editor Tabs**, **Outline symbols**, **selected editor code**, or **macOS Finder / OS File Explorer** directly into the Antigravity Chat window **without holding `Shift`**.
+   - Automatically detects and re-applies the drag-and-drop bridge whenever the Google Antigravity extension updates.
 
-## 打包与安装
+3. **Explorer Context Menu (`explorer/context`)**
+   - Right-click any **file** or **folder** (supports multi-selection with `Cmd` / `Ctrl` / `Shift`) in the Explorer and select **`Add to Antigravity Chat`** to attach them as `@file` / `@directory` context in the chat input.
+
+4. **Editor Tab Context Menu (`editor/title/context`)**
+   - Right-click any Editor Tab and select **`Add to Antigravity Chat`** to attach that file to the Antigravity Chat window.
+
+5. **Editor Selection & File Context Menu (`editor/context`)**
+   - Select code in the editor (single or multi-cursor) and right-click **`Add Selection to Antigravity Chat`** to attach the exact file line range.
+   - Right-click anywhere in an editor and select **`Add Current File to Antigravity Chat`** to attach the entire active file.
+
+---
+
+## Commands (Command Palette)
+
+- `Antigravity: Add Selection to Antigravity Chat`
+- `Antigravity: Add Current File to Antigravity Chat`
+- `Antigravity: Enable File Drag-and-Drop to Antigravity Chat`
+- `Antigravity: Disable File Drag-and-Drop to Antigravity Chat (Restore Original)`
+
+---
+
+## Installation
+
+### From VS Code Marketplace
+Search for **`Antigravity Helper`** (`bennyhuo.antigravity-helper`) in the VS Code Extensions view, or install from the [VS Code Marketplace page](https://marketplace.visualstudio.com/items?itemName=bennyhuo.antigravity-helper):
+
+```bash
+code --install-extension bennyhuo.antigravity-helper
+```
+
+### Build from Source
 
 ```bash
 npm run package
 code --install-extension antigravity-helper-0.1.2.vsix
 ```
+
+---
+
+## License
+
+[MIT](./LICENSE) © [Benny Huo](https://github.com/bennyhuo)
