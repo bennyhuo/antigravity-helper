@@ -2,7 +2,7 @@
 
 [English](https://github.com/bennyhuo/antigravity-helper/blob/main/README.md) | **简体中文**
 
-[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/bennyhuo.antigravity-helper?label=VS%20Code%20Marketplace&logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=bennyhuo.antigravity-helper)
+[![VS Code Marketplace](https://badgen.net/vs-marketplace/v/bennyhuo.antigravity-helper)](https://marketplace.visualstudio.com/items?itemName=bennyhuo.antigravity-helper)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-bennyhuo%2Fantigravity--helper-181717?logo=github)](https://github.com/bennyhuo/antigravity-helper)
 
 补齐 Google Antigravity VS Code 插件（`google.google-antigravity`）缺失的文件与代码片段快捷添加功能：**选中文本悬浮 `Chat` 按钮**、**免按 `Shift` 直接拖拽文件到聊天框**、以及 **资源管理器 / 标签页 / 编辑器右键菜单添加上下文**。
@@ -56,7 +56,7 @@ code --install-extension bennyhuo.antigravity-helper
 
 ```bash
 npm run package
-code --install-extension antigravity-helper-0.1.2.vsix
+code --install-extension antigravity-helper-0.1.3.vsix
 ```
 
 ---

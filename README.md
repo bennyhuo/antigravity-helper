@@ -2,7 +2,7 @@
 
 **English** | [简体中文](https://github.com/bennyhuo/antigravity-helper/blob/main/README.zh-CN.md)
 
-[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/bennyhuo.antigravity-helper?label=VS%20Code%20Marketplace&logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=bennyhuo.antigravity-helper)
+[![VS Code Marketplace](https://badgen.net/vs-marketplace/v/bennyhuo.antigravity-helper)](https://marketplace.visualstudio.com/items?itemName=bennyhuo.antigravity-helper)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-bennyhuo%2Fantigravity--helper-181717?logo=github)](https://github.com/bennyhuo/antigravity-helper)
 
 Enhance the official Google Antigravity VS Code extension (`google.google-antigravity`) with missing context shortcuts: **shift-free file drag-and-drop**, **Explorer & Editor Tab right-click context menus**, and a **floating `Chat` button on text selection**.
@@ -56,7 +56,7 @@ code --install-extension bennyhuo.antigravity-helper
 
 ```bash
 npm run package
-code --install-extension antigravity-helper-0.1.2.vsix
+code --install-extension antigravity-helper-0.1.3.vsix
 ```
 
 ---
