@@ -56,7 +56,7 @@ code --install-extension bennyhuo.antigravity-helper
 
 ```bash
 npm run package
-code --install-extension antigravity-helper-0.1.4.vsix
+code --install-extension antigravity-helper-0.1.5.vsix
 ```
 
 ---

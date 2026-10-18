@@ -6,12 +6,10 @@ const path = require('path');
 const os = require('os');
 const crypto = require('crypto');
 
-const PATCH_VERSION = 'v8';
+const PATCH_VERSION = 'v11';
 const LEGACY_BLOCK_REGEX = /\/\* AGY_HELPER_(?:TOP_)?START(?::[^\s*]+)? \*\/[\s\S]*?\/\* AGY_HELPER_(?:TOP_)?END(?::[^\s*]+)? \*\//g;
 
-const WORKBENCH_CSS_START = `/* AGY_HELPER_WORKBENCH_CSS_START:${PATCH_VERSION} */`;
-const WORKBENCH_CSS_END = `/* AGY_HELPER_WORKBENCH_CSS_END:${PATCH_VERSION} */`;
-const WORKBENCH_CSS_LEGACY_REGEX = /\/\* AGY_HELPER_WORKBENCH_CSS_START(?::[^\s*]+)? \*\/[\s\S]*?\/\* AGY_HELPER_WORKBENCH_CSS_END(?::[^\s*]+)? \*\//g;
+const WORKBENCH_CSS_LEGACY_REGEX = /\n?\/\* AGY_HELPER_WORKBENCH_CSS_START(?::[^\s*]+)? \*\/[\s\S]*?\/\* AGY_HELPER_WORKBENCH_CSS_END(?::[^\s*]+)? \*\/\n?/g;
 
 const STATE_FILE_PATH = path.join(__dirname, '..', '.agy-helper-state.json');
 
@@ -114,8 +112,6 @@ const WORKBENCH_WIDGET_CSS_RULES = `
   opacity:1;
   transform:scale(1);
 }`;
-
-const WORKBENCH_CSS_SNIPPET = `\n${WORKBENCH_CSS_START}${WORKBENCH_WIDGET_CSS_RULES}\n${WORKBENCH_CSS_END}\n`;
 
 /**
  * Self-contained Workbench script that runs inside the main VS Code workbench window (`workbench.desktop.main.js`).
@@ -1043,10 +1039,69 @@ function findCandidateAppRoots(explicitAppRoot) {
 }
 
 /**
- * Patch VS Code's workbench CSS & JS so:
+ * Synchronize `product.json` SHA-256 checksums for `workbench.desktop.main.css` and
+ * `workbench.desktop.main.js` with the actual files on disk, preserving original JSON formatting.
+ * Also cleans up any legacy `product.json.agy-helper.bak` file.
+ *
+ * @param {string} productJsonPath
+ * @param {string} cssPath
+ * @param {string} jsPath
+ * @returns {boolean} Whether `product.json` was updated on disk.
+ */
+function syncProductChecksums(productJsonPath, cssPath, jsPath) {
+  if (!fs.existsSync(productJsonPath)) return false;
+
+  try {
+    const productBakPath = productJsonPath + '.agy-helper.bak';
+    let currentRaw = fs.readFileSync(productJsonPath, 'utf8');
+    let baseRaw = currentRaw;
+
+    if (fs.existsSync(productBakPath)) {
+      try {
+        const bakRaw = fs.readFileSync(productBakPath, 'utf8');
+        const curObj = JSON.parse(currentRaw);
+        const bakObj = JSON.parse(bakRaw);
+        if (curObj && bakObj && curObj.commit && curObj.commit === bakObj.commit) {
+          baseRaw = bakRaw;
+        }
+      } catch (_) {}
+      try {
+        fs.unlinkSync(productBakPath);
+      } catch (_) {}
+    }
+
+    let updatedRaw = baseRaw;
+
+    if (fs.existsSync(cssPath)) {
+      const cssChecksum = computeVscodeChecksum(fs.readFileSync(cssPath));
+      updatedRaw = updatedRaw.replace(
+        /("vs\/workbench\/workbench\.desktop\.main\.css"\s*:\s*")[^"]*(")/,
+        `$1${cssChecksum}$2`
+      );
+    }
+
+    if (fs.existsSync(jsPath)) {
+      const jsChecksum = computeVscodeChecksum(fs.readFileSync(jsPath));
+      updatedRaw = updatedRaw.replace(
+        /("vs\/workbench\/workbench\.desktop\.main\.js"\s*:\s*")[^"]*(")/,
+        `$1${jsChecksum}$2`
+      );
+    }
+
+    if (updatedRaw !== currentRaw) {
+      fs.writeFileSync(productJsonPath, updatedRaw, 'utf8');
+      return true;
+    }
+  } catch (_) {}
+
+  return false;
+}
+
+/**
+ * Patch VS Code's workbench JS so:
  * 1. Dragging files/folders/tabs/selections displays a transparent drop zone directly over the Antigravity panel.
  * 2. Selecting text in a code editor displays a floating `Chat` button that adds the selection to Antigravity Chat.
- * Also updates `product.json` checksums so VS Code does not show a corrupt warning.
+ * 3. `IntegrityService` and `product.json` checksums stay in sync so VS Code never shows a corrupt installation warning.
  *
  * @param {string} [appRoot]
  * @returns {{ patched: boolean, alreadyPatched: boolean, error?: string }}
@@ -1062,79 +1117,54 @@ function patchVscodeWorkbench(appRoot) {
   const jsPath = path.join(targetAppRoot, 'out', 'vs', 'workbench', 'workbench.desktop.main.js');
   const productJsonPath = path.join(targetAppRoot, 'product.json');
 
-  if (!fs.existsSync(cssPath) || !fs.existsSync(jsPath)) {
+  if (!fs.existsSync(jsPath)) {
     return { patched: false, alreadyPatched: false };
   }
 
   try {
-    let css = fs.readFileSync(cssPath, 'utf8');
-    let js = fs.readFileSync(jsPath, 'utf8');
-
-    const cssHasCurrent = css.includes(WORKBENCH_CSS_START);
-    const jsHasCurrent = js.includes(WORKBENCH_JS_MARKER);
-
     saveStateAppRoot(targetAppRoot);
 
-    if (cssHasCurrent && jsHasCurrent) {
+    const cssBakPath = cssPath + '.agy-helper.bak';
+    const jsBakPath = jsPath + '.agy-helper.bak';
+
+    // Clean up any legacy CSS patch (styles are injected at runtime by WORKBENCH_HELPER_SCRIPT)
+    let cssChanged = false;
+    if (fs.existsSync(cssPath)) {
+      const css = fs.readFileSync(cssPath, 'utf8');
+      const cleanedCss = css.replace(WORKBENCH_CSS_LEGACY_REGEX, '');
+      if (cleanedCss !== css) {
+        fs.writeFileSync(cssPath, cleanedCss, 'utf8');
+        cssChanged = true;
+      }
+    }
+    if (fs.existsSync(cssBakPath)) {
+      try {
+        fs.unlinkSync(cssBakPath);
+      } catch (_) {}
+    }
+    if (fs.existsSync(jsBakPath)) {
+      try {
+        fs.unlinkSync(jsBakPath);
+      } catch (_) {}
+    }
+
+    let js = fs.readFileSync(jsPath, 'utf8');
+    const jsHasCurrent = js.includes(WORKBENCH_JS_MARKER);
+
+    if (jsHasCurrent && !cssChanged) {
+      syncProductChecksums(productJsonPath, cssPath, jsPath);
       return { patched: false, alreadyPatched: true };
     }
 
-    // Create backups of original unpatched workbench files
-    const cssBakPath = cssPath + '.agy-helper.bak';
-    const jsBakPath = jsPath + '.agy-helper.bak';
-    const productBakPath = productJsonPath + '.agy-helper.bak';
-
-    if (!fs.existsSync(cssBakPath) && !WORKBENCH_CSS_LEGACY_REGEX.test(css)) {
-      fs.writeFileSync(cssBakPath, css, 'utf8');
-    }
-    WORKBENCH_CSS_LEGACY_REGEX.lastIndex = 0;
-
-    if (!fs.existsSync(jsBakPath) && !js.includes('AGY_HELPER_WB_JS')) {
-      fs.writeFileSync(jsBakPath, js, 'utf8');
-    }
-
-    if (fs.existsSync(productJsonPath) && !fs.existsSync(productBakPath)) {
-      fs.copyFileSync(productJsonPath, productBakPath);
-    }
-
-    // Restore clean base before applying current patch
-    if (fs.existsSync(cssBakPath)) {
-      css = fs.readFileSync(cssBakPath, 'utf8');
-    } else {
-      css = css.replace(WORKBENCH_CSS_LEGACY_REGEX, '');
-    }
-
-    if (fs.existsSync(jsBakPath)) {
-      js = fs.readFileSync(jsBakPath, 'utf8');
-    } else {
-      js = js.replace(WORKBENCH_JS_LEGACY_REGEX, WORKBENCH_JS_ORIG);
-    }
-
-    css = css + WORKBENCH_CSS_SNIPPET;
+    // Restore clean unpatched JS in-place before applying current patch
+    js = js.replace(WORKBENCH_JS_LEGACY_REGEX, WORKBENCH_JS_ORIG);
 
     if (js.includes(WORKBENCH_JS_ORIG)) {
       js = js.replace(WORKBENCH_JS_ORIG, WORKBENCH_JS_PATCHED);
     }
 
-    fs.writeFileSync(cssPath, css, 'utf8');
     fs.writeFileSync(jsPath, js, 'utf8');
-
-    // Update SHA-256 checksums in product.json
-    if (fs.existsSync(productJsonPath)) {
-      try {
-        const productRaw = fs.readFileSync(productJsonPath, 'utf8');
-        const product = JSON.parse(productRaw);
-        if (product && product.checksums && typeof product.checksums === 'object') {
-          product.checksums['vs/workbench/workbench.desktop.main.css'] = computeVscodeChecksum(
-            fs.readFileSync(cssPath)
-          );
-          product.checksums['vs/workbench/workbench.desktop.main.js'] = computeVscodeChecksum(
-            fs.readFileSync(jsPath)
-          );
-          fs.writeFileSync(productJsonPath, JSON.stringify(product, null, '\t') + '\n', 'utf8');
-        }
-      } catch (_) {}
-    }
+    syncProductChecksums(productJsonPath, cssPath, jsPath);
 
     return { patched: true, alreadyPatched: false };
   } catch (err) {
@@ -1165,30 +1195,42 @@ function unpatchVscodeWorkbench(appRoot) {
     const cssPath = path.join(root, 'out', 'vs', 'workbench', 'workbench.desktop.main.css');
     const jsPath = path.join(root, 'out', 'vs', 'workbench', 'workbench.desktop.main.js');
     const productJsonPath = path.join(root, 'product.json');
+    const cssBakPath = cssPath + '.agy-helper.bak';
+    const jsBakPath = jsPath + '.agy-helper.bak';
 
     try {
-      for (const filePath of [cssPath, jsPath, productJsonPath]) {
-        if (!fs.existsSync(filePath)) continue;
-        const bakPath = filePath + '.agy-helper.bak';
-        if (fs.existsSync(bakPath)) {
-          fs.copyFileSync(bakPath, filePath);
-          fs.unlinkSync(bakPath);
+      if (fs.existsSync(cssPath)) {
+        const content = fs.readFileSync(cssPath, 'utf8');
+        const cleaned = content.replace(WORKBENCH_CSS_LEGACY_REGEX, '');
+        if (cleaned !== content) {
+          fs.writeFileSync(cssPath, cleaned, 'utf8');
           anyChanged = true;
-        } else if (filePath === cssPath) {
-          const content = fs.readFileSync(cssPath, 'utf8');
-          const cleaned = content.replace(WORKBENCH_CSS_LEGACY_REGEX, '');
-          if (cleaned !== content) {
-            fs.writeFileSync(cssPath, cleaned, 'utf8');
-            anyChanged = true;
-          }
-        } else if (filePath === jsPath) {
-          const content = fs.readFileSync(jsPath, 'utf8');
-          const cleaned = content.replace(WORKBENCH_JS_LEGACY_REGEX, WORKBENCH_JS_ORIG);
-          if (cleaned !== content) {
-            fs.writeFileSync(jsPath, cleaned, 'utf8');
-            anyChanged = true;
-          }
         }
+      }
+      if (fs.existsSync(cssBakPath)) {
+        try {
+          fs.unlinkSync(cssBakPath);
+          anyChanged = true;
+        } catch (_) {}
+      }
+
+      if (fs.existsSync(jsPath)) {
+        const content = fs.readFileSync(jsPath, 'utf8');
+        const cleaned = content.replace(WORKBENCH_JS_LEGACY_REGEX, WORKBENCH_JS_ORIG);
+        if (cleaned !== content) {
+          fs.writeFileSync(jsPath, cleaned, 'utf8');
+          anyChanged = true;
+        }
+      }
+      if (fs.existsSync(jsBakPath)) {
+        try {
+          fs.unlinkSync(jsBakPath);
+          anyChanged = true;
+        } catch (_) {}
+      }
+
+      if (syncProductChecksums(productJsonPath, cssPath, jsPath)) {
+        anyChanged = true;
       }
     } catch (err) {
       errors.push(err instanceof Error ? err.message : String(err));
@@ -1317,6 +1359,21 @@ async function ensureDragAndDropEnabled(options = {}) {
   if (!vscode) return;
 
   await vscode.commands.executeCommand('setContext', 'antigravityHelper.active', true);
+
+  // On automatic startup, if workbench.desktop.main.js needs to be modified on disk,
+  // wait until VS Code's LifecyclePhase.Eventually (IntegrityService._isPure) has completed
+  // so our disk write does not race with the current window's startup checksum check.
+  if (options.silent && vscode.env && vscode.env.appRoot) {
+    try {
+      const jsPath = path.join(vscode.env.appRoot, 'out', 'vs', 'workbench', 'workbench.desktop.main.js');
+      if (fs.existsSync(jsPath)) {
+        const js = fs.readFileSync(jsPath, 'utf8');
+        if (!js.includes(WORKBENCH_JS_MARKER)) {
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+        }
+      }
+    } catch (_) {}
+  }
 
   // Clean up any legacy patches that modified google.google-antigravity on disk in older versions
   const legacyCleaned = cleanupLegacyAntigravityPatches();

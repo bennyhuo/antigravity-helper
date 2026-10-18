@@ -2,7 +2,7 @@
   "name": "antigravity-helper",
   "displayName": "%displayName%",
   "description": "%description%",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "publisher": "bennyhuo",
   "author": {
     "name": "Benny Huo"
